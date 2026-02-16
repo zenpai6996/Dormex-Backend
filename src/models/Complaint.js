@@ -1,0 +1,20 @@
+import mongoose from "mongoose";
+
+const complaintSchema = new mongoose.Schema(
+	{
+		student: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "User",
+		},
+		category: String,
+		description: String,
+		status: {
+			type: String,
+			enum: ["OPEN", "IN_PROGRESS", "RESOLVED"],
+			default: "OPEN",
+		},
+	},
+	{ timestamps: true },
+);
+
+export default mongoose.model("Complaint", complaintSchema);
