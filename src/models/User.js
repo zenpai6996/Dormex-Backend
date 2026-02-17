@@ -10,6 +10,16 @@ const userSchema = new mongoose.Schema(
 			enum: ["ADMIN", "STUDENT"],
 			default: "STUDENT",
 		},
+		status: {
+			type: String,
+			enum: ["ACTIVE", "LEFT", "TRANSFERRED"],
+			default: "STUDENT",
+		},
+		room: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Room",
+			default: null,
+		},
 	},
 	{ timestamps: true },
 );
