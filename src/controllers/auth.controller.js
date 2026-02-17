@@ -6,7 +6,11 @@ const { compare, hash } = pkg;
 const { sign } = jwt;
 
 export async function register(req, res) {
-	const { name, email, password, role } = req.body;
+	const { name, email, password } = req.body;
+	const existingUser = await User.findOne({ email });
+	if (existingUser) {
+		return res.status(400).json({ message: "Email already registered" });
+	}
 
 	const hashed = await hash(password, 10);
 
@@ -14,7 +18,7 @@ export async function register(req, res) {
 		name,
 		email,
 		password: hashed,
-		role,
+		role: "STUDENT",
 	});
 
 	res.status(201).json({ message: "User registered" });
