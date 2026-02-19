@@ -19,6 +19,7 @@ export async function register(req, res) {
 		email,
 		password: hashed,
 		role: "STUDENT",
+		status: "ACTIVE",
 	});
 
 	res.status(201).json({ message: "User registered" });
