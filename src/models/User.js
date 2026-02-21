@@ -13,7 +13,12 @@ const userSchema = new mongoose.Schema(
 		status: {
 			type: String,
 			enum: ["ACTIVE", "LEFT", "TRANSFERRED"],
-			default: "STUDENT",
+			default: "ACTIVE",
+		},
+		block: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Block",
+			default: null,
 		},
 		room: {
 			type: mongoose.Schema.Types.ObjectId,

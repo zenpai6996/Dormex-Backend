@@ -2,9 +2,15 @@ import mongoose from "mongoose";
 
 const roomSchema = new mongoose.Schema(
 	{
-		block: String,
-		floor: Number,
-		roomNumber: String,
+		block: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Block",
+			required: true,
+		},
+		roomNumber: {
+			type: String,
+			required: true,
+		},
 		capacity: Number,
 		occupants: [
 			{
@@ -15,5 +21,6 @@ const roomSchema = new mongoose.Schema(
 	},
 	{ timestamps: true },
 );
+roomSchema.index({ block: 1, roomNumber: 1 }, { unique: true });
 
 export default mongoose.model("Room", roomSchema);

@@ -2,12 +2,29 @@ import Room from "../models/Room.js";
 import User from "../models/User.js";
 
 export async function createRoom(req, res) {
-	const room = await Room.create(req.body);
-	res.status(201).json(room);
+	try {
+		const { blockId, roomNumber, capacity } = req.body;
+
+		const room = await Room.create({
+			block: blockId,
+			roomNumber,
+			capacity,
+		});
+
+		res.status(201).json(room);
+	} catch (err) {
+		if (err.code === 11000) {
+			return res.status(400).json({
+				message: "Room already exists in this block",
+			});
+		}
+
+		res.status(500).json({ message: err.message });
+	}
 }
 
 export async function getRooms(req, res) {
-	const rooms = await Room.find().populate("occupants");
+	Room.find().populate("occupants", "-password").populate("block");
 	res.json(rooms);
 }
 
@@ -25,6 +42,14 @@ export const assignStudentToRoom = async (req, res) => {
 		if (student.role !== "STUDENT")
 			return res.status(400).json({ message: "User is not a student" });
 
+		// Block validation
+		if (!student.block)
+			return res.status(400).json({ message: "Student not in any block" });
+
+		if (student.block.toString() !== room.block.toString())
+			return res.status(400).json({
+				message: "Student and room belong to different blocks",
+			});
 		// Check if already assigned
 		if (student.room)
 			return res
