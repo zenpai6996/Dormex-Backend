@@ -11,6 +11,9 @@ const blockSchema = new mongoose.Schema(
 			type: String,
 			unique: true,
 		},
+		inviteCodeExpiresAt: {
+			type: Date,
+		},
 		maxCapacity: {
 			type: Number,
 			required: true,

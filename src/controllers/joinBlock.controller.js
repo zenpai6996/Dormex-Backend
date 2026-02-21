@@ -24,6 +24,8 @@ export const joinBlock = async (req, res) => {
 
 		const block = await Block.findOne({ inviteCode });
 		if (!block) return res.status(404).json({ message: "Invalid invite code" });
+		if (!block.inviteCodeExpiresAt || block.inviteCodeExpiresAt < new Date())
+			return res.status(400).json({ message: "Invite code expired" });
 
 		const user = await User.findById(req.user.id);
 

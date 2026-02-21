@@ -6,16 +6,22 @@ function generateInviteCode() {
 }
 
 export const createBlock = async (req, res) => {
-	const { name } = req.body;
+	try {
+		const { name, maxCapacity } = req.body;
 
-	const inviteCode = generateInviteCode();
+		const inviteCode = generateInviteCode();
 
-	const block = await Block.create({
-		name,
-		inviteCode,
-	});
+		const block = await Block.create({
+			name,
+			maxCapacity,
+			inviteCode,
+			inviteCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+		});
 
-	res.status(201).json(block);
+		res.status(201).json(block);
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
 };
 
 export const getBlocks = async (req, res) => {
@@ -37,11 +43,20 @@ export const deleteBlock = async (req, res) => {
 
 export const regenerateInviteCode = async (req, res) => {
 	try {
-		const newCode = generateInviteCode();
+		let newCode;
+		let existing;
+
+		do {
+			newCode = generateInviteCode();
+			existing = await Block.findOne({ inviteCode: newCode });
+		} while (existing);
 
 		const block = await Block.findByIdAndUpdate(
 			req.params.id,
-			{ inviteCode: newCode },
+			{
+				inviteCode: newCode,
+				inviteCodeExpiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+			},
 			{ new: true },
 		);
 
