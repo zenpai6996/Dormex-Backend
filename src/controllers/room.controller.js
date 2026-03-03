@@ -28,6 +28,18 @@ export async function getRooms(req, res) {
 	res.json(rooms);
 }
 
+export const getRoomsByBlock = async (req, res) => {
+	try {
+		const { blockId } = req.params;
+		const rooms = await Room.find({ block: blockId })
+			.populate("occupants", "-password")
+			.sort({ roomNumber: 1 });
+		res.json(rooms);
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+};
+
 export const assignStudentToRoom = async (req, res) => {
 	try {
 		const { roomId, studentId } = req.body;

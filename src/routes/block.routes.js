@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	createBlock,
 	deleteBlock,
+	getBlockById,
 	getBlocks,
 	regenerateInviteCode,
 	updateBlock,
@@ -13,6 +14,8 @@ const router = Router();
 
 router.post("/", auth, role(["ADMIN"]), createBlock);
 router.get("/", auth, role(["ADMIN"]), getBlocks);
+router.get("/:id", auth, role(["ADMIN"]), getBlockById);
+
 router.put("/:id", auth, role(["ADMIN"]), updateBlock);
 router.delete("/:id", auth, role(["ADMIN"]), deleteBlock);
 router.patch(

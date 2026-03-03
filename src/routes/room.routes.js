@@ -3,6 +3,7 @@ import {
 	assignStudentToRoom,
 	createRoom,
 	getRooms,
+	getRoomsByBlock,
 	removeStudentFromRoom,
 } from "../controllers/room.controller.js";
 import auth from "../middleware/auth.middleware.js";
@@ -12,6 +13,8 @@ const router = Router();
 
 router.post("/", auth, createRoom);
 router.get("/", auth, getRooms);
+router.get("/block/:blockId", auth, role(["ADMIN"]), getRoomsByBlock);
+
 router.post("/assign", auth, role(["ADMIN"]), assignStudentToRoom);
 router.post("/remove", auth, role(["ADMIN"]), removeStudentFromRoom);
 
