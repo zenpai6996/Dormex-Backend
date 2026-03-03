@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import Block from "../models/Block.js";
+import Room from "../models/Room.js";
+import User from "../models/User.js";
 
 function generateInviteCode() {
 	return crypto.randomBytes(4).toString("hex"); // 8 char code
