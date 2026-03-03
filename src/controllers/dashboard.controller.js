@@ -72,7 +72,13 @@ export const getDashboardAnalytics = async (req, res) => {
 		if (req.user.role === "STUDENT") {
 			const user = await User.findById(req.user.id)
 				.populate("block")
-				.populate("room");
+				.populate({
+					path: "room",
+					populate: {
+						path: "occupants",
+						select: "name email status _id",
+					},
+				});
 
 			return res.json({
 				role: "STUDENT",
