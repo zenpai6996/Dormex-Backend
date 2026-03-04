@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
 	assignStudentToRoom,
 	createRoom,
-	deleteRoom,
 	getRooms,
 	getRoomsByBlock,
 	removeStudentFromRoom,
@@ -18,6 +17,5 @@ router.get("/block/:blockId", auth, role(["ADMIN"]), getRoomsByBlock);
 
 router.post("/assign", auth, role(["ADMIN"]), assignStudentToRoom);
 router.post("/remove", auth, role(["ADMIN"]), removeStudentFromRoom);
-router.post("/delete", auth, role(["ADMIN"]), deleteRoom);
 
 export default router;
