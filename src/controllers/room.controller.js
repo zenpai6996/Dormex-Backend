@@ -117,9 +117,9 @@ export const removeStudentFromRoom = async (req, res) => {
 
 export const deleteRoom = async (req, res) => {
 	try {
-		const { roomId } = req.params;
+		const { id } = req.params;
 
-		const room = await Room.findById(roomId);
+		const room = await Room.findById(id);
 		if (!room) {
 			return res.status(404).json({ message: "Room not found" });
 		}
@@ -130,7 +130,7 @@ export const deleteRoom = async (req, res) => {
 			});
 		}
 
-		await Room.findByIdAndDelete(roomId);
+		await Room.findByIdAndDelete(id);
 		res.json({ message: "Room deleted successfully" });
 	} catch (err) {
 		res.status(500).json({ message: err.message });
