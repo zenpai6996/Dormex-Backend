@@ -47,3 +47,26 @@ export const joinBlock = async (req, res) => {
 		res.status(500).json({ message: err.message });
 	}
 };
+
+export const leaveBlock = async (req, res) => {
+	try {
+		const user = await User.findById(req.user.id);
+
+		if (!user.block) {
+			return res.status(400).json({ message: "Not assigned to any block" });
+		}
+
+		if (user.room) {
+			return res.status(400).json({
+				message: "Must leave room before leaving block. Contact administrator.",
+			});
+		}
+
+		user.block = null;
+		await user.save();
+
+		res.json({ message: "Left block successfully" });
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+};
