@@ -82,8 +82,52 @@ export const updateBlock = async (req, res) => {
 };
 
 export const deleteBlock = async (req, res) => {
-	await Block.findByIdAndDelete(req.params.id);
-	res.json({ message: "Block deleted" });
+	try {
+		const { id } = req.params;
+		const { password } = req.body;
+
+		// Get the admin user from the request (set by auth middleware)
+		const admin = await User.findById(req.user.id);
+		if (!admin) {
+			return res.status(404).json({ message: "Admin not found" });
+		}
+
+		// Verify password
+		const isValidPassword = await bcrypt.compare(password, admin.password);
+		if (!isValidPassword) {
+			return res.status(401).json({ message: "Invalid password" });
+		}
+
+		const block = await Block.findById(id);
+		if (!block) {
+			return res.status(404).json({ message: "Block not found" });
+		}
+
+		// Delete all rooms in this block
+		await Room.deleteMany({ block: id });
+
+		// Remove block reference from all students in this block
+		await User.updateMany(
+			{ block: id },
+			{
+				$set: {
+					block: null,
+					room: null,
+				},
+			},
+		);
+
+		// Delete the block
+		await Block.findByIdAndDelete(id);
+
+		res.json({
+			message: "Block deleted successfully",
+			deletedBlock: block.name,
+		});
+	} catch (err) {
+		console.error("Delete block error:", err);
+		res.status(500).json({ message: err.message });
+	}
 };
 
 export const regenerateInviteCode = async (req, res) => {
