@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import Block from "../models/Block.js";
 import Room from "../models/Room.js";
