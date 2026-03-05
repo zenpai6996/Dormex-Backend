@@ -42,3 +42,49 @@ export async function login(req, res) {
 
 	res.json({ token, role: user.role });
 }
+
+export async function getProfile(req, res) {
+	try {
+		const user = await User.findById(req.user.id)
+			.select("-password")
+			.populate("block", "name")
+			.populate("room", "roomNumber");
+
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		res.json(user);
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+}
+
+export async function changePassword(req, res) {
+	try {
+		const { currentPassword, newPassword } = req.body;
+		const userId = req.user.id;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
+
+		// Verify current password
+		const isValid = await compare(currentPassword, user.password);
+		if (!isValid) {
+			return res.status(401).json({ message: "Current password is incorrect" });
+		}
+
+		// Hash new password
+		const hashedPassword = await hash(newPassword, 10);
+
+		// Update password
+		user.password = hashedPassword;
+		await user.save();
+
+		res.json({ message: "Password changed successfully" });
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+}
