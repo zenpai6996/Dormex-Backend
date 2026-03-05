@@ -43,17 +43,33 @@ export const getComplaints = async (req, res) => {
 	try {
 		if (req.user.role === "ADMIN") {
 			const complaints = await Complaint.find()
-				.populate("student", "-password")
+				.populate({
+					path: "student",
+					select: "-password",
+					populate: {
+						path: "block",
+						select: "name",
+					},
+				})
 				.populate("block", "name")
 				.sort({ createdAt: -1 });
+
+			// Add debug log
+			console.log(
+				"Complaints with blocks:",
+				JSON.stringify(complaints, null, 2),
+			);
+
 			res.json(complaints);
 		} else {
 			const complaints = await Complaint.find({ student: req.user.id })
 				.populate("student", "-password")
+				.populate("block", "name")
 				.sort({ createdAt: -1 });
 			res.json(complaints);
 		}
 	} catch (err) {
+		console.error("Get complaints error:", err);
 		res.status(500).json({ message: err.message });
 	}
 };
