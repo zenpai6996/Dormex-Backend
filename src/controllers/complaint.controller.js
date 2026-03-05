@@ -1,20 +1,61 @@
 import Complaint from "../models/Complaint.js";
+import User from "../models/User.js";
 
 export const createComplaint = async (req, res) => {
-	const complaint = await Complaint.create({
-		...req.body,
-		student: req.user.id,
-	});
-	res.status(201).json(complaint);
+	try {
+		// Get the student with their block information
+		const student = await User.findById(req.user.id).populate("block");
+
+		// Check if student exists
+		if (!student) {
+			return res.status(404).json({ message: "Student not found" });
+		}
+
+		// Check if student has joined a block
+		if (!student.block) {
+			return res.status(403).json({
+				message: "You must join a block before filing a complaint",
+			});
+		}
+
+		// Check if student status is ACTIVE
+		if (student.status !== "ACTIVE") {
+			return res.status(403).json({
+				message: "Only active students can file complaints",
+			});
+		}
+
+		// Create the complaint with student's block info
+		const complaint = await Complaint.create({
+			...req.body,
+			student: req.user.id,
+			block: student.block._id,
+		});
+
+		res.status(201).json(complaint);
+	} catch (err) {
+		console.error("Create complaint error:", err);
+		res.status(500).json({ message: err.message });
+	}
 };
 
 export const getComplaints = async (req, res) => {
-	const complaints =
-		req.user.role === "ADMIN"
-			? await Complaint.find().populate("student", "-password")
-			: await Complaint.find({ student: req.user.id });
-
-	res.json(complaints);
+	try {
+		if (req.user.role === "ADMIN") {
+			const complaints = await Complaint.find()
+				.populate("student", "-password")
+				.populate("block", "name")
+				.sort({ createdAt: -1 });
+			res.json(complaints);
+		} else {
+			const complaints = await Complaint.find({ student: req.user.id })
+				.populate("student", "-password")
+				.sort({ createdAt: -1 });
+			res.json(complaints);
+		}
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
 };
 
 export const updateComplaintStatus = async (req, res) => {
