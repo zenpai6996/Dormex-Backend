@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
 	createComplaint,
+	deleteComplaint,
 	getComplaints,
 	updateComplaintStatus,
 } from "../controllers/complaint.controller.js";
@@ -12,5 +13,6 @@ const router = Router();
 router.post("/", auth, role(["STUDENT"]), createComplaint);
 router.get("/", auth, getComplaints);
 router.put("/:id", auth, role(["ADMIN"]), updateComplaintStatus);
+router.delete("/:id", auth, deleteComplaint);
 
 export default router;
