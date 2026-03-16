@@ -70,3 +70,52 @@ export const leaveBlock = async (req, res) => {
 		res.status(500).json({ message: err.message });
 	}
 };
+
+export const removeStudentFromBlock = async (req, res) => {
+	try {
+		const { studentId } = req.body;
+
+		// Find the student
+		const student = await User.findById(studentId);
+		if (!student) {
+			return res.status(404).json({ message: "Student not found" });
+		}
+
+		// Check if user is a student
+		if (student.role !== "STUDENT") {
+			return res.status(400).json({ message: "User is not a student" });
+		}
+
+		// Check if student is in a block
+		if (!student.block) {
+			return res.status(400).json({ message: "Student is not in any block" });
+		}
+
+		// Check if student is still assigned to a room
+		if (student.room) {
+			return res.status(400).json({
+				message:
+					"Student must be unassigned from room first before removing from block",
+			});
+		}
+
+		// Get the block name before removing for response
+		const block = await Block.findById(student.block);
+		const blockName = block ? block.name : "Unknown";
+
+		// Remove student from block
+		student.block = null;
+		await student.save();
+
+		res.json({
+			message: "Student removed from block successfully",
+			student: {
+				id: student._id,
+				name: student.name,
+				blockName,
+			},
+		});
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+};
