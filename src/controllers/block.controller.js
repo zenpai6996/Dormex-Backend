@@ -28,8 +28,52 @@ export const createBlock = async (req, res) => {
 };
 
 export const getBlocks = async (req, res) => {
-	const blocks = await Block.find();
-	res.json(blocks);
+	try {
+		const blocks = await Block.find();
+
+		const blocksWithStats = await Promise.all(
+			blocks.map(async (block) => {
+				const rooms = await Room.find({ block: block._id });
+
+				const totalStudents = await User.countDocuments({
+					block: block._id,
+					role: "STUDENT",
+				});
+
+				const assignedStudents = await User.countDocuments({
+					block: block._id,
+					role: "STUDENT",
+					room: { $ne: null },
+				});
+
+				const totalCapacity = rooms.reduce(
+					(sum, r) => sum + (r.capacity || 0),
+					0,
+				);
+				const occupiedSeats = rooms.reduce(
+					(sum, r) => sum + r.occupants.length,
+					0,
+				);
+
+				return {
+					...block.toObject(),
+					stats: {
+						totalStudents,
+						assignedStudents,
+						unassignedStudents: totalStudents - assignedStudents,
+						totalRooms: rooms.length,
+						occupiedRooms: rooms.filter((r) => r.occupants.length > 0).length,
+						totalCapacity,
+						occupiedSeats,
+					},
+				};
+			}),
+		);
+
+		res.json(blocksWithStats);
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
 };
 
 export const getBlockById = async (req, res) => {
