@@ -3,6 +3,7 @@ import express, { json } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import adminStudentRoutes from "./routes/admin-student.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import blockRoutes from "./routes/block.routes.js";
 import complaintRoutes from "./routes/complaint.routes.js";
@@ -27,5 +28,6 @@ app.use("/api/students", studentRoutes);
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/mess", messRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/admin-students", adminStudentRoutes);
 
 export default app;
