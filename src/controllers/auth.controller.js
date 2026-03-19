@@ -6,10 +6,23 @@ const { compare, hash } = pkg;
 const { sign } = jwt;
 
 export async function register(req, res) {
-	const { name, email, password } = req.body;
+	const { name, email, password, rollNo, dateOfBirth, phoneNumber, branch } =
+		req.body;
+
+	// Check if email already exists
 	const existingUser = await User.findOne({ email });
 	if (existingUser) {
 		return res.status(400).json({ message: "Email already registered" });
+	}
+
+	// Check if roll number already exists (for students)
+	if (rollNo) {
+		const existingRollNo = await User.findOne({ rollNo });
+		if (existingRollNo) {
+			return res
+				.status(400)
+				.json({ message: "Roll number already registered" });
+		}
 	}
 
 	const hashed = await hash(password, 10);
@@ -18,11 +31,16 @@ export async function register(req, res) {
 		name,
 		email,
 		password: hashed,
+		rollNo,
+		dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+		phoneNumber,
+		branch,
 		role: "STUDENT",
 		status: "ACTIVE",
+		joiningDate: new Date(),
 	});
 
-	res.status(201).json({ message: "User registered" });
+	res.status(201).json({ message: "User registered successfully" });
 }
 
 export async function login(req, res) {
