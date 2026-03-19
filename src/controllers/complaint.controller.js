@@ -4,7 +4,9 @@ import User from "../models/User.js";
 export const createComplaint = async (req, res) => {
 	try {
 		// Get the student with their block information
-		const student = await User.findById(req.user.id).populate("block");
+		const student = await User.findById(req.user.id)
+			.populate("block")
+			.populate("room");
 
 		// Check if student exists
 		if (!student) {
@@ -15,6 +17,13 @@ export const createComplaint = async (req, res) => {
 		if (!student.block) {
 			return res.status(403).json({
 				message: "You must join a block before filing a complaint",
+			});
+		}
+
+		// Check if student has joined a room
+		if (!student.room) {
+			return res.status(403).json({
+				message: "You must join a room before filing a complaint",
 			});
 		}
 
@@ -30,6 +39,7 @@ export const createComplaint = async (req, res) => {
 			...req.body,
 			student: req.user.id,
 			block: student.block._id,
+			room: student.room._id,
 		});
 
 		res.status(201).json(complaint);
@@ -46,10 +56,10 @@ export const getComplaints = async (req, res) => {
 				.populate({
 					path: "student",
 					select: "-password",
-					populate: {
-						path: "block",
-						select: "name",
-					},
+					populate: [
+						{ path: "block", select: "name" },
+						{ path: "room", select: "roomNumber" },
+					],
 				})
 				.populate("block", "name")
 				.sort({ createdAt: -1 });
@@ -63,7 +73,14 @@ export const getComplaints = async (req, res) => {
 			res.json(complaints);
 		} else {
 			const complaints = await Complaint.find({ student: req.user.id })
-				.populate("student", "-password")
+				.populate({
+					path: "student",
+					select: "-password",
+					populate: [
+						{ path: "block", select: "name" },
+						{ path: "room", select: "roomNumber" },
+					],
+				})
 				.populate("block", "name")
 				.sort({ createdAt: -1 });
 			res.json(complaints);
