@@ -60,7 +60,7 @@ server.js       # entry point
 
 ## Related
 
-- Frontend: https://github.com/zenpai6996/Dormex-Frontend
+- [Frontend](https://github.com/zenpai6996/Dormex-Frontend)
 
 ## License
 
