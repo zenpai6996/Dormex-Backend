@@ -1,3 +1,4 @@
+import Complaint from "../models/Complaint.js";
 import LeaveApplication from "../models/LeaveApplication.js";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -34,6 +35,19 @@ export const runLeaveCleanup = async () => {
 	);
 
 	await LeaveApplication.deleteMany({ expiresAt: { $lte: now } });
+
+	await Complaint.updateMany(
+		{
+			status: "RESOLVED",
+			expiresAt: null,
+		},
+		{
+			expiresAt,
+			resolvedAt: now,
+		},
+	);
+
+	await Complaint.deleteMany({ expiresAt: { $lte: now } });
 };
 
 export const startLeaveCleanupJob = (intervalMinutes = 60) => {

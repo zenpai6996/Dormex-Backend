@@ -92,11 +92,23 @@ export const getComplaints = async (req, res) => {
 };
 
 export const updateComplaintStatus = async (req, res) => {
-	const complaint = await Complaint.findByIdAndUpdate(
-		req.params.id,
-		{ status: req.body.status },
-		{ new: true },
-	);
+	const { status } = req.body;
+	const now = new Date();
+	const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+	const updates = { status };
+
+	if (status === "RESOLVED") {
+		updates.resolvedAt = now;
+		updates.expiresAt = expiresAt;
+	} else {
+		updates.resolvedAt = null;
+		updates.expiresAt = null;
+	}
+
+	const complaint = await Complaint.findByIdAndUpdate(req.params.id, updates, {
+		new: true,
+	});
 
 	res.json(complaint);
 };

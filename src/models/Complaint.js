@@ -21,8 +21,18 @@ const complaintSchema = new mongoose.Schema(
 			enum: ["OPEN", "IN_PROGRESS", "RESOLVED"],
 			default: "OPEN",
 		},
+		resolvedAt: {
+			type: Date,
+			default: null,
+		},
+		expiresAt: {
+			type: Date,
+			default: null,
+		},
 	},
 	{ timestamps: true },
 );
+
+complaintSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Complaint", complaintSchema);
