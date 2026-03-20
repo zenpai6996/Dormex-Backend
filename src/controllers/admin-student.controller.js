@@ -162,7 +162,8 @@ export const deleteStudentByAdmin = async (req, res) => {
 
 		if (student.block || student.room) {
 			return res.status(400).json({
-				message: "Student must be unassigned from block and room before deletion",
+				message:
+					"Student must be unassigned from block and room before deletion",
 			});
 		}
 
