@@ -7,6 +7,10 @@ const parseDate = (value) => {
 	return date;
 };
 
+const getExpiryDate = (baseDate = new Date()) => {
+	return new Date(baseDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+};
+
 export const createLeave = async (req, res) => {
 	try {
 		const { fromDate, toDate, reason } = req.body;
@@ -67,6 +71,20 @@ export const getLeaves = async (req, res) => {
 	try {
 		const { status } = req.query;
 		const filter = status ? { status } : {};
+		const now = new Date();
+
+		await LeaveApplication.updateMany(
+			{
+				status: "PENDING",
+				fromDate: { $lt: now },
+				expiresAt: null,
+			},
+			{
+				status: "REJECTED",
+				expiresAt: getExpiryDate(now),
+				approvedAt: null,
+			},
+		);
 
 		if (req.user.role !== "ADMIN") {
 			filter.student = req.user.id;
@@ -107,17 +125,41 @@ export const updateLeaveStatus = async (req, res) => {
 			return res.status(404).json({ message: "Leave application not found" });
 		}
 
+		const now = new Date();
+
+		if (leave.status === "PENDING" && leave.fromDate < now) {
+			const updatedLeave = await LeaveApplication.findByIdAndUpdate(
+				leave._id,
+				{
+					status: "REJECTED",
+					approvedAt: null,
+					expiresAt: getExpiryDate(now),
+				},
+				{ new: true },
+			)
+				.populate({
+					path: "student",
+					select: "-password",
+					populate: [
+						{ path: "block", select: "name" },
+						{ path: "room", select: "roomNumber" },
+					],
+				})
+				.populate("block", "name")
+				.populate("room", "roomNumber");
+
+			return res.json(updatedLeave);
+		}
+
 		const updates = { status };
+		const expiresAt = getExpiryDate(now);
 
 		if (status === "APPROVED") {
-			const approvedAt = new Date();
-			updates.approvedAt = approvedAt;
-			updates.expiresAt = new Date(
-				approvedAt.getTime() + 7 * 24 * 60 * 60 * 1000,
-			);
+			updates.approvedAt = now;
+			updates.expiresAt = expiresAt;
 		} else {
 			updates.approvedAt = null;
-			updates.expiresAt = null;
+			updates.expiresAt = expiresAt;
 		}
 
 		const updatedLeave = await LeaveApplication.findByIdAndUpdate(
