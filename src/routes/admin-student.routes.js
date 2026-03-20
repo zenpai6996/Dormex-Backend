@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	bulkCreateStudents,
 	createStudentByAdmin,
+	deleteStudentByAdmin,
 	getAllStudents,
 	updateStudentByAdmin,
 } from "../controllers/admin-student.controller.js";
@@ -16,6 +17,7 @@ router.use(auth, role(["ADMIN"]));
 router.post("/create", createStudentByAdmin);
 router.get("/", getAllStudents);
 router.put("/:id", updateStudentByAdmin);
+router.delete("/:id", deleteStudentByAdmin);
 router.post("/bulk", bulkCreateStudents);
 
 export default router;

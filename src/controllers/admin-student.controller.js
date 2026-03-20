@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
+import Complaint from "../models/Complaint.js";
 import User from "../models/User.js";
 
-const { hash } = bcrypt;
+const { compare, hash } = bcrypt;
 
 // Generate a random password
 function generatePassword() {
@@ -129,6 +130,50 @@ export const updateStudentByAdmin = async (req, res) => {
 		}
 
 		res.json(student);
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+};
+
+// Delete student by admin with password confirmation
+export const deleteStudentByAdmin = async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { password } = req.body;
+
+		if (!password) {
+			return res.status(400).json({ message: "Password is required" });
+		}
+
+		const admin = await User.findById(req.user.id);
+		if (!admin) {
+			return res.status(401).json({ message: "Unauthorized" });
+		}
+
+		const isValid = await compare(password, admin.password);
+		if (!isValid) {
+			return res.status(401).json({ message: "Invalid password" });
+		}
+
+		const student = await User.findById(id);
+		if (!student || student.role !== "STUDENT") {
+			return res.status(404).json({ message: "Student not found" });
+		}
+
+		if (student.block || student.room) {
+			return res.status(400).json({
+				message: "Student must be unassigned from block and room before deletion",
+			});
+		}
+
+		await Complaint.deleteMany({
+			student: student._id,
+			block: { $ne: null },
+		});
+
+		await User.findByIdAndDelete(student._id);
+
+		res.json({ message: "Student deleted successfully" });
 	} catch (err) {
 		res.status(500).json({ message: err.message });
 	}
