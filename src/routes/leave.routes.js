@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
 	createLeave,
+	deleteLeave,
 	getLeaves,
 	updateLeaveStatus,
 } from "../controllers/leave.controller.js";
@@ -12,5 +13,6 @@ const router = Router();
 router.post("/", auth, role(["STUDENT"]), createLeave);
 router.get("/", auth, getLeaves);
 router.patch("/:id/status", auth, role(["ADMIN"]), updateLeaveStatus);
+router.delete("/:id", auth, deleteLeave);
 
 export default router;

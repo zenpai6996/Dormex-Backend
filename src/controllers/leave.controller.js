@@ -183,3 +183,29 @@ export const updateLeaveStatus = async (req, res) => {
 		res.status(500).json({ message: err.message });
 	}
 };
+
+export const deleteLeave = async (req, res) => {
+	try {
+		const leave = await LeaveApplication.findById(req.params.id);
+		if (!leave) {
+			return res.status(404).json({ message: "Leave application not found" });
+		}
+
+		if (req.user.role !== "ADMIN" && leave.student.toString() !== req.user.id) {
+			return res
+				.status(403)
+				.json({ message: "Unauthorized to delete this leave" });
+		}
+
+		if (req.user.role !== "ADMIN" && leave.status !== "REJECTED") {
+			return res.status(400).json({
+				message: "Only rejected leaves can be deleted",
+			});
+		}
+
+		await LeaveApplication.findByIdAndDelete(leave._id);
+		res.json({ message: "Leave application deleted" });
+	} catch (err) {
+		res.status(500).json({ message: err.message });
+	}
+};
