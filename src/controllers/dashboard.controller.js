@@ -60,9 +60,11 @@ import User from "../models/User.js";
 
 export const getDashboardAnalytics = async (req, res) => {
 	try {
-		const today = new Date().toLocaleString("en-US", {
+		const appTimeZone = process.env.APP_TIMEZONE || "Asia/Kolkata";
+		const today = new Intl.DateTimeFormat("en-US", {
 			weekday: "long",
-		});
+			timeZone: appTimeZone,
+		}).format(new Date());
 
 		const todayMenu = await MessMenu.findOne({ day: today });
 
