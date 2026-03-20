@@ -76,7 +76,7 @@ export const getDashboardAnalytics = async (req, res) => {
 					path: "room",
 					populate: {
 						path: "occupants",
-						select: "name email status _id",
+						select: "name email status rollNo branch _id",
 					},
 				});
 
